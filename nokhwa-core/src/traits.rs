@@ -186,14 +186,15 @@ pub trait CaptureBackendTrait {
     /// Directly copies a frame to a Wgpu texture. This will automatically convert the frame into a RGBA frame.
     /// # Errors
     /// If the frame cannot be captured or the resolution is 0 on any axis, this will error.
-    fn frame_texture<'a>(
+    fn frame_texture(
         &mut self,
         device: &WgpuDevice,
         queue: &WgpuQueue,
-        label: Option<&'a str>,
+        label: Option<&str>,
+        texture_formats: &[TextureFormat]
     ) -> Result<WgpuTexture, NokhwaError> {
+
         use crate::pixel_format::RgbAFormat;
-        use std::num::NonZeroU32;
         let frame = self.frame()?.decode_image::<RgbAFormat>()?;
 
         let texture_size = Extent3d {
@@ -204,6 +205,7 @@ pub trait CaptureBackendTrait {
 
         let texture = device.create_texture(&TextureDescriptor {
             label,
+            view_formats: texture_formats,
             size: texture_size,
             mip_level_count: 1,
             sample_count: 1,
@@ -211,16 +213,6 @@ pub trait CaptureBackendTrait {
             format: TextureFormat::Rgba8UnormSrgb,
             usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
         });
-
-        let width_nonzero = match NonZeroU32::try_from(4 * frame.width()) {
-            Ok(w) => Some(w),
-            Err(why) => return Err(NokhwaError::ReadFrameError(why.to_string())),
-        };
-
-        let height_nonzero = match NonZeroU32::try_from(frame.height()) {
-            Ok(h) => Some(h),
-            Err(why) => return Err(NokhwaError::ReadFrameError(why.to_string())),
-        };
 
         queue.write_texture(
             ImageCopyTexture {
@@ -232,8 +224,8 @@ pub trait CaptureBackendTrait {
             &frame,
             ImageDataLayout {
                 offset: 0,
-                bytes_per_row: width_nonzero,
-                rows_per_image: height_nonzero,
+                bytes_per_row: Some(4 * frame.width()),
+                rows_per_image: Some(4 * frame.height()),
             },
             texture_size,
         );

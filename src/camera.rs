@@ -84,7 +84,7 @@ impl Camera {
     /// Allows creation of a [`Camera`] with a custom backend. This is useful if you are creating e.g. a custom module.
     ///
     /// You **must** have set a format beforehand.
-    pub fn with_custom(
+    #[must_use] pub fn with_custom(
         idx: CameraIndex,
         api: ApiBackend,
         device: Box<dyn CaptureBackendTrait>,
@@ -406,13 +406,14 @@ impl Camera {
     /// Directly copies a frame to a Wgpu texture. This will automatically convert the frame into a RGBA frame.
     /// # Errors
     /// If the frame cannot be captured or the resolution is 0 on any axis, this will error.
-    pub fn frame_texture<'a, F: FormatDecoder>(
+    pub fn frame_texture<F: FormatDecoder>(
         &mut self,
         device: &WgpuDevice,
         queue: &WgpuQueue,
-        label: Option<&'a str>,
+        label: Option<&str>,
+        texture_formats: &[wgpu::TextureFormat]
     ) -> Result<WgpuTexture, NokhwaError> {
-        self.device.frame_texture(device, queue, label)
+        self.device.frame_texture(device, queue, label, texture_formats)
     }
 
     /// Will drop the stream.

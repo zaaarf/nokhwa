@@ -87,10 +87,10 @@ impl CallbackCamera {
             frame_callback: Arc::new(Mutex::new(Box::new(callback))),
             last_frame_captured: Arc::new(Mutex::new(Buffer::new(
                 Resolution::new(0, 0),
-                &vec![],
+                &[],
                 FrameFormat::GRAY,
             ))),
-            die_bool: Arc::new(Default::default()),
+            die_bool: Arc::new(AtomicBool::default()),
             current_camera,
             handle: Arc::new(Mutex::new(None)),
         })
@@ -106,18 +106,18 @@ impl CallbackCamera {
             frame_callback: Arc::new(Mutex::new(Box::new(callback))),
             last_frame_captured: Arc::new(Mutex::new(Buffer::new(
                 Resolution::new(0, 0),
-                &vec![],
+                &[],
                 FrameFormat::GRAY,
             ))),
-            die_bool: Arc::new(Default::default()),
+            die_bool: Arc::new(AtomicBool::default()),
             current_camera,
             handle: Arc::new(Mutex::new(None)),
         }
     }
 
     /// Gets the current Camera's index.
-    pub fn index(&self) -> &CameraIndex {
-        &self.current_camera.index()
+    #[must_use] pub fn index(&self) -> &CameraIndex {
+        self.current_camera.index()
     }
 
     /// Sets the current Camera's index. Note that this re-initializes the camera.

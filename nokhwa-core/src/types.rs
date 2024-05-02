@@ -28,12 +28,6 @@ pub enum RequestedFormatType {
     None,
 }
 
-impl Default for RequestedFormatType {
-    fn default() -> Self {
-        RequestedFormatType::None
-    }
-}
-
 impl Display for RequestedFormatType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{self:?}")
@@ -1594,7 +1588,7 @@ pub fn buf_mjpeg_to_rgb(_data: &[u8], _dest: &mut [u8], _rgba: bool) -> Result<(
 
 /// Returns the predicted size of the destination YUYV422 buffer.
 #[inline]
-pub fn yuyv422_predicted_size(size: usize, rgba: bool) -> usize {
+#[must_use] pub fn yuyv422_predicted_size(size: usize, rgba: bool) -> usize {
     let pixel_size = if rgba { 4 } else { 3 };
     // yuyv yields 2 3-byte pixels per yuyv chunk
     (size / 4) * (2 * pixel_size)
@@ -1804,8 +1798,8 @@ pub fn buf_nv12_to_rgb(
             let base_index = (hidx * width_usize * rgba_size) + cidx * rgba_size * 2;
 
             if rgba {
-                let px0 = yuyv444_to_rgba(y0 as i32, u as i32, v as i32);
-                let px1 = yuyv444_to_rgba(y1 as i32, u as i32, v as i32);
+                let px0 = yuyv444_to_rgba(i32::from(y0), i32::from(u), i32::from(v));
+                let px1 = yuyv444_to_rgba(i32::from(y1), i32::from(u), i32::from(v));
 
                 out[base_index] = px0[0];
                 out[base_index + 1] = px0[1];
@@ -1816,8 +1810,8 @@ pub fn buf_nv12_to_rgb(
                 out[base_index + 6] = px1[2];
                 out[base_index + 7] = px1[3];
             } else {
-                let px0 = yuyv444_to_rgb(y0 as i32, u as i32, v as i32);
-                let px1 = yuyv444_to_rgb(y1 as i32, u as i32, v as i32);
+                let px0 = yuyv444_to_rgb(i32::from(y0), i32::from(u), i32::from(v));
+                let px1 = yuyv444_to_rgb(i32::from(y1), i32::from(u), i32::from(v));
 
                 out[base_index] = px0[0];
                 out[base_index + 1] = px0[1];
